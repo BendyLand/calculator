@@ -56,7 +56,7 @@ struct ContentView: View {
     ]
     
     @State var currentOp: Operation = .none
-    @State var runningNum = 0
+    @State var runningNum: Float = 0.0
     
     var body: some View {
         ZStack {
@@ -103,23 +103,24 @@ struct ContentView: View {
             switch button {
             case .add:
                 self.currentOp = .add
-                self.runningNum = Int(self.value) ?? 0
+                self.runningNum = Float(self.value) ?? 0.0
+                print(runningNum)
                 self.value = "0"
             case .subtract:
                 self.currentOp = .subtract
-                self.runningNum = Int(self.value) ?? 0
+                self.runningNum = Float(self.value) ?? 0.0
                 self.value = "0"
             case .multiply:
                 self.currentOp = .multiply
-                self.runningNum = Int(self.value) ?? 0
+                self.runningNum = Float(self.value) ?? 0.0
                 self.value = "0"
             case .divide:
                 self.currentOp = .divide
-                self.runningNum = Int(self.value) ?? 0
+                self.runningNum = Float(self.value) ?? 0.0
                 self.value = "0"
             default:
                 let running = self.runningNum
-                let current = Int(self.value) ?? 0
+                let current = Float(self.value) ?? 0.0
                 switch self.currentOp {
                 case .add:
                     self.value = "\(running + current)"
@@ -128,7 +129,7 @@ struct ContentView: View {
                 case .multiply:
                     self.value = "\(running * current)"
                 case .divide:
-                    if current != 0 {
+                    if current != 0.0 {
                         self.value = "\(running / current)"
                     }
                     else {
@@ -141,7 +142,35 @@ struct ContentView: View {
         case .clear:
             self.value = "0"
         case .decimal, .negative, .percent: // not supported yet
-            break
+            switch button {
+            case .decimal:
+                if !self.value.contains(".") {
+                    self.value = "\(self.value)."
+                }
+            case .negative:
+                if self.value.contains("-") {
+                    let start = self.value.index(self.value.startIndex, offsetBy: 1)
+                    let newStr = self.value[start...]
+                    self.value = "\(newStr)"
+                }
+                else {
+                    self.value = "-\(self.value)"
+                }
+            case .percent:
+                let maxLen = self.value.count
+                var num = Float(self.value) ?? 0
+                num /= 100
+                if maxLen < 3 {
+                    self.value = "\(num)"
+                }
+                else {
+                    let divisor = pow(10.0, Double(maxLen))
+                    num = Float(round(Double(num) * divisor) / divisor)
+                    self.value = "\(num)"
+                }
+            default:
+                break
+            }
         default:
             let num = button.rawValue
             if self.value == "0" {
